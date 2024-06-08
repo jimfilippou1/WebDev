@@ -5,13 +5,14 @@ const path = require('path');
 const insertUser = require('../src/api/user_create');
 const { loginUser } = require('../src/api/auth');
 const getPatients = require("../src/api/view_patients");
-const updatedData= require("../src/api/update_patient")
+const updatedData = require("../src/api/update_patient");
 const deletePatientById = require('../src/api/delete_patient');
 const db = require('../src/db_connect'); // Import db_connect module
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 app.use(session({
@@ -21,8 +22,7 @@ app.use(session({
     cookie: { secure: false } // set to true if using HTTPS
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
-
+// Function to check if user is authenticated
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
         return next();
@@ -39,7 +39,8 @@ function checkRole(role) {
         res.status(403).send('Unauthorized access');
     }
 }
-//Pages send 
+
+// Pages send
 app.get('/login', (req, res) => {
     res.render(path.join(__dirname, '../view', 'login.ejs'));
 });
@@ -61,9 +62,8 @@ app.post('/create_user', (req, res) => {
 
 app.post('/login', loginUser);
 
-
 app.get('/api/doctor/patients', isAuthenticated, checkRole('doctor'), (req, res) => {
-    getPatients((err, patients) => { // Pass a callback function
+    getPatients((err, patients) => {
         if (err) {
             res.status(500).json({ error: 'Internal Server Error' });
             return;
